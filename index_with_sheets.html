@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monthly Credit Note Generator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .controls select, .controls input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            min-width: 120px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .print-btn {
+            background-color: #28a745;
+        }
+        .print-btn:hover {
+            background-color: #218838;
+        }
+        .credit-note {
+            background-color: white;
+            border: 2px solid #000;
+            padding: 20px;
+            margin: 20px 0;
+            page-break-after: always;
+        }
+        .credit-note h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #2c3e50;
+            padding-bottom: 10px;
+        }
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .creditor-info, .debtor-info {
+            width: 48%;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .creditor-info h3, .debtor-info h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .info-row {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .info-label {
+            font-weight: bold;
+            width: 40%;
+        }
+        .info-value {
+            width: 58%;
+            border-bottom: 1px solid #ccc;
+            min-height: 20px;
+        }
+        .payment-details {
+            margin: 20px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+        }
+        .payment-details h3 {
+            margin-top: 0;
+            color: #2c3e50;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 5px;
+        }
+        .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .payment-table th, .payment-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .payment-table th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        .payment-input {
+            width: 100%;
+            border: none;
+            padding: 4px;
+            text-align: center;
+            background: transparent;
+        }
+        .payment-input:focus {
+            background-color: #f0f8ff;
+            outline: 1px solid #007bff;
+        }
+        .amount-input {
+            text-align: right;
+        }
+        .payment-summary {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        .summary-label {
+            font-weight: bold;
+        }
+        .summary-value {
+            border-bottom: 1px solid #000;
+            min-width: 150px;
+            text-align: right;
+            font-weight: bold;
+        }
+        .total-row {
+            border-top: 2px solid #000;
+            padding-top: 10px;
+            font-size: 18px;
+            color: #2c3e50;
+        }
+        .signature-section {
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .signature-box {
+            width: 30%;
+            text-align: center;
+        }
+        .signature-line {
+            border-bottom: 1px solid #000;
+            margin-bottom: 5px;
+            height: 30px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: none;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        .form-group textarea {
+            height: 60px;
+            resize: vertical;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .add-payment-btn {
+            background-color: #17a2b8;
+            margin-top: 10px;
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+        .add-payment-btn:hover {
+            background-color: #138496;
+        }
+        .remove-payment-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 2px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .remove-payment-btn:hover {
+            background-color: #c82333;
+        }
+        @media print {
+            body {
+                background-color: white;
+            }
+            .container {
+                box-shadow: none;
+                max-width: none;
+            }
+            .controls {
+                display: none;
+            }
+            h1 {
+                display: none;
+            }
+            .credit-note {
+                page-break-after: always;
+                border: 2px solid #000;
+            }
+            .payment-input {
+                border: none !important;
+                outline: none !important;
+            }
+            .add-payment-btn, .remove-payment-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Monthly Credit Note Generator</h1>
+        
+        <div class="controls">
+            <label for="selectedCreditor">Select Creditor:</label>
+            <select id="selectedCreditor">
+                <option value="">Select a creditor...</option>
+            </select>
+            
+            <label for="selectedMonth">Month:</label>
+            <input type="month" id="selectedMonth">
+            
+            <button onclick="editCreditorInfo()">Edit Creditor Details</button>
+            <button onclick="generateCreditNote()">Generate Credit Note</button>
+            <button class="print-btn" onclick="printCreditNote()">Print Credit Note</button>
+            <button onclick="saveToSheet()">Save to Google Sheets</button>
+        </div>
+
+        <div id="creditNoteContainer">
+            <!-- Credit notes will be generated here -->
+        </div>
+    </div>
+
+    <!-- Modal for editing creditor information -->
+    <div id="creditorModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Edit Creditor Information</h2>
+            <form id="creditorForm">
+                <div class="form-group">
+                    <label for="creditorName">Creditor Name:</label>
+                    <input type="text" id="creditorName" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="creditorAddress">Address:</label>
+                    <textarea id="creditorAddress" placeholder="Street Address, City, Postal Code"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="creditorPhone">Phone:</label>
+                        <input type="tel" id="creditorPhone">
+                    </div>
+                    <div class="form-group">
+                        <label for="creditorEmail">Email:</label>
+                        <input type="email" id="creditorEmail">
+                    </div>
+                </div>
+                
+                <h3>Banking Information</h3>
+                <div class="form-group">
+                    <label for="bankName">Bank Name:</label>
+                    <input type="text" id="bankName">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="accountNumber">Account Number:</label>
+                        <input type="text" id="accountNumber">
+                    </div>
+                    <div class="form-group">
+                        <label for="branchCode">Branch Code:</label>
+                        <input type="text" id="branchCode">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="accountHolder">Account Holder Name:</label>
+                    <input type="text" id="accountHolder">
+                </div>
+                
+                <div class="form-group">
+                    <label for="accountType">Account Type:</label>
+                    <select id="accountType">
+                        <option value="Current">Current</option>
+                        <option value="Savings">Savings</option>
+                        <option value="Cheque">Cheque</option>
+                    </select>
+                </div>
+                
+                <button type="submit">Save Information</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Initial debt data
+        let initialDebts = [];
+
+async function fetchCreditorData() {
+  const response = await fetch('https://script.google.com/macros/s/AKfycbxTFhNC88a2scHgNBay9Apy1i10T8LO7fCmgX8mcmUHy5cQKiQeXjdN4fLQbblDhtycgQ/exec');
+  const data = await response.json();
+  initialDebts = data.map(row => ({
+    name: row.Name,
+    balance: parseFloat(row.Balance)
+  }));
+  initializeCreditors();
+}
+
+
+            { name: "Mercy Mnisi", balance: 7450.00 },
+            { name: "JC Coetsee", balance: 70102.00 },
+            { name: "JP Venter", balance: 8353.50 },
+            { name: "Tshediso Ramotheoe", balance: 15948.00 },
+            { name: "Steven Carstens", balance: 14031.17 },
+            { name: "Brannon Sun", balance: 30872.63 },
+            { name: "Macrocosm", balance: 48125.02 },
+            { name: "Lele McBirdy", balance: 49534.00 },
+            { name: "Daphney Ramolebatsana", balance: 52033.50 },
+            { name: "DC Saaiman", balance: 51900.00 },
+            { name: "Gift Mahlangu", balance: 51393.50 },
+            { name: "Ross Hemmingway", balance: 68525.34 },
+            { name: "George", balance: 72880.00 },
+            { name: "InsideOut Rockfields", balance: 94000.00 },
+            { name: "Jaco Bekker", balance: 109533.65 },
+            { name: "Lerato Pooe", balance: 120000.00 }
+        ];
+
+        let creditorInfo = {};
+        let currentCreditor = null;
+        let paymentCount = 3;
+
+        // Standard debtor information for Sable Energy Group
+        const debtorInfo = {
+            name: "Sable Energy Group (Pty) Ltd",
+            address: "Meyerton, Gauteng, 1619",
+            phone: "087 265 8744",
+            email: "info@sable-energy.co.za"
+        };
+
+        function initializeCreditors() {
+            const select = document.getElementById('selectedCreditor');
+            select.innerHTML = '<option value="">Select a creditor...</option>';
+            
+            initialDebts.forEach(debt => {
+                const option = document.createElement('option');
+                option.value = debt.name;
+                option.textContent = debt.name;
+                select.appendChild(option);
+                
+                // Initialize creditor info if not exists
+                if (!creditorInfo[debt.name]) {
+                    creditorInfo[debt.name] = {
+                        name: debt.name,
+                        address: "",
+                        phone: "",
+                        email: "",
+                        bankName: "",
+                        accountNumber: "",
+                        branchCode: "",
+                        accountHolder: "",
+                        accountType: "Current"
+                    };
+                }
+            });
+        }
+
+        function editCreditorInfo() {
+            const selectedCreditor = document.getElementById('selectedCreditor').value;
+            if (!selectedCreditor) {
+                alert('Please select a creditor first');
+                return;
+            }
+            
+            currentCreditor = selectedCreditor;
+            const info = creditorInfo[selectedCreditor];
+            
+            // Populate form
+            document.getElementById('creditorName').value = info.name;
+            document.getElementById('creditorAddress').value = info.address;
+            document.getElementById('creditorPhone').value = info.phone;
+            document.getElementById('creditorEmail').value = info.email;
+            document.getElementById('bankName').value = info.bankName;
+            document.getElementById('accountNumber').value = info.accountNumber;
+            document.getElementById('branchCode').value = info.branchCode;
+            document.getElementById('accountHolder').value = info.accountHolder;
+            document.getElementById('accountType').value = info.accountType;
+            
+            document.getElementById('creditorModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('creditorModal').style.display = 'none';
+        }
+
+        function addPaymentRow() {
+            paymentCount++;
+            const tbody = document.querySelector('.payment-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td><input type="date" class="payment-input" onchange="calculateTotals()"></td>
+                <td><input type="text" class="payment-input" placeholder="EFT/Cash/Cheque" onchange="calculateTotals()"></td>
+                <td><input type="text" class="payment-input" placeholder="Reference" onchange="calculateTotals()"></td>
+                <td><input type="number" class="payment-input amount-input" step="0.01" min="0" placeholder="0.00" onchange="calculateTotals()"></td>
+                <td><button type="button" class="remove-payment-btn" onclick="removePaymentRow(this)">Remove</button></td>
+            `;
+            tbody.appendChild(newRow);
+        }
+
+        function removePaymentRow(button) {
+            const row = button.closest('tr');
+            row.remove();
+            calculateTotals();
+        }
+
+        function calculateTotals() {
+            const selectedCreditor = document.getElementById('selectedCreditor').value;
+            if (!selectedCreditor) return;
+            
+            const debt = initialDebts.find(d => d.name === selectedCreditor);
+            const startingBalance = debt.balance;
+            
+            // Calculate total payments
+            const amountInputs = document.querySelectorAll('.amount-input');
+            let totalPaid = 0;
+            
+            amountInputs.forEach(input => {
+                const value = parseFloat(input.value) || 0;
+                totalPaid += value;
+            });
+            
+            const balanceOwing = startingBalance - totalPaid;
+            
+            // Update display
+            document.getElementById('totalPaid').textContent = `R ${totalPaid.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`;
+            document.getElementById('balanceOwing').textContent = `R ${balanceOwing.toLocaleString('en-ZA', {minimumFractionDigits: 2})}`;
+        }
+
+        function generateCreditNote() {
+            const selectedCreditor = document.getElementById('selectedCreditor').value;
+            const selectedMonth = document.getElementById('selectedMonth').value;
+            
+            if (!selectedCreditor || !selectedMonth) {
+                alert('Please select both a creditor and a month');
+                return;
+            }
+            
+            const debt = initialDebts.find(d => d.name === selectedCreditor);
+            const info = creditorInfo[selectedCreditor];
+            const monthDate = new Date(selectedMonth + '-01');
+            
+            // Reset payment count
+            paymentCount = 3;
+            
+            const creditNoteHTML = `
+                <div class="credit-note">
+                    <h2>Credit Note</h2>
+                    
+                    <div class="header-section">
+                        <div class="creditor-info">
+                            <h3>TO: CREDITOR</h3>
+                            <div class="info-row">
+                                <span class="info-label">Name:</span>
+                                <span class="info-value">${info.name}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Address:</span>
+                                <span class="info-value">${info.address.replace(/\n/g, '<br>')}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Phone:</span>
+                                <span class="info-value">${info.phone}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Email:</span>
+                                <span class="info-value">${info.email}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="debtor-info">
+                            <h3>FROM: DEBTOR</h3>
+                            <div class="info-row">
+                                <span class="info-label">Name:</span>
+                                <span class="info-value">${debtorInfo.name}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Address:</span>
+                                <span class="info-value">${debtorInfo.address}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Phone:</span>
+                                <span class="info-value">${debtorInfo.phone}</span>
+                            </div>
+                            <div class="info-row">
+                                <span class="info-label">Email:</span>
+                                <span class="info-value">${debtorInfo.email}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="payment-details">
+                        <h3>Payment Details - ${monthDate.toLocaleDateString('en-ZA', { month: 'long', year: 'numeric' })}</h3>
+                        
+                        <table class="payment-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Payment Method</th>
+                                    <th>Reference</th>
+                                    <th>Amount Paid</th>
+                                    <th style="width: 80px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="date" class="payment-input" onchange="calculateTotals()"></td>
+                                    <td><input type="text" class="payment-input" placeholder="EFT/Cash/Cheque" onchange="calculateTotals()"></td>
+                                    <td><input type="text" class="payment-input" placeholder="Reference" onchange="calculateTotals()"></td>
+                                    <td><input type="number" class="payment-input amount-input" step="0.01" min="0" placeholder="0.00" onchange="calculateTotals()"></td>
+                                    <td><button type="button" class="remove-payment-btn" onclick="removePaymentRow(this)">Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="date" class="payment-input" onchange="calculateTotals()"></td>
+                                    <td><input type="text" class="payment-input" placeholder="EFT/Cash/Cheque" onchange="calculateTotals()"></td>
+                                    <td><input type="text" class="payment-input" placeholder="Reference" onchange="calculateTotals()"></td>
+                                    <td><input type="number" class="payment-input amount-input" step="0.01" min="0" placeholder="0.00" onchange="calculateTotals()"></td>
+                                    <td><button type="button" class="remove-payment-btn" onclick="removePaymentRow(this)">Remove</button></td>
+                                </tr>
+                                <tr>
+                                    <td><input type="date" class="payment-input" onchange="calculateTotals()"></td>
+                                    <td><input type="text" class="payment-input" placeholder="EFT/Cash/Cheque" onchange="calculateTotals()"></td>
+                                    <td><input type="text" class="payment-input" placeholder="Reference" onchange="calculateTotals()"></td>
+                                    <td><input type="number" class="payment-input amount-input" step="0.01" min="0" placeholder="0.00" onchange="calculateTotals()"></td>
+                                    <td><button type="button" class="remove-payment-btn" onclick="removePaymentRow(this)">Remove</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <button type="button" class="add-payment-btn" onclick="addPaymentRow()">Add Payment Row</button>
+                    </div>
+                    
+                    <div class="payment-summary">
+                        <div class="summary-row">
+                            <span class="summary-label">Starting Balance:</span>
+                            <span class="summary-value">R ${debt.balance.toLocaleString('en-ZA', {minimumFractionDigits: 2})}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="summary-label">Total Payments Made:</span>
+                            <span class="summary-value" id="totalPaid">R 0.00</span>
+                        </div>
+                        <div class="summary-row total-row">
+                            <span class="summary-label">Balance Still Owing:</span>
+                            <span class="summary-value" id="balanceOwing">R ${debt.balance.toLocaleString('en-ZA', {minimumFractionDigits: 2})}</span>
+                        </div>
+                    </div>
+                    
+                    ${info.bankName ? `
+                    <div class="payment-details">
+                        <h3>Banking Details for Future Payments</h3>
+                        <div class="info-row">
+                            <span class="info-label">Bank Name:</span>
+                            <span class="info-value">${info.bankName}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Account Holder:</span>
+                            <span class="info-value">${info.accountHolder}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Account Number:</span>
+                            <span class="info-value">${info.accountNumber}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Branch Code:</span>
+                            <span class="info-value">${info.branchCode}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Account Type:</span>
+                            <span class="info-value">${info.accountType}</span>
+                        </div>
+                    </div>
+                    ` : ''}
+                    
+
+                </div>
+            `;
+            
+            document.getElementById('creditNoteContainer').innerHTML = creditNoteHTML;
+        }
+
+        function printCreditNote() {
+            const creditNote = document.getElementById('creditNoteContainer').innerHTML;
+            if (!creditNote.trim()) {
+                alert('Please generate a credit note first');
+                return;
+            }
+            
+            window.print();
+        }
+
+        // Form submission handler
+        document.getElementById('creditorForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (currentCreditor) {
+                creditorInfo[currentCreditor] = {
+                    name: document.getElementById('creditorName').value,
+                    address: document.getElementById('creditorAddress').value,
+                    phone: document.getElementById('creditorPhone').value,
+                    email: document.getElementById('creditorEmail').value,
+                    bankName: document.getElementById('bankName').value,
+                    accountNumber: document.getElementById('accountNumber').value,
+                    branchCode: document.getElementById('branchCode').value,
+                    accountHolder: document.getElementById('accountHolder').value,
+                    accountType: document.getElementById('accountType').value
+                };
+                
+                alert('Creditor information saved successfully!');
+                closeModal();
+            }
+        });
+
+        // Initialize current month
+        document.getElementById('selectedMonth').value = new Date().toISOString().slice(0, 7);
+
+        // Initialize on page load
+        window.onload = function() {
+            fetchCreditorData();
+        };
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('creditorModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        };
+    
+async function saveToSheet() {
+  const selectedCreditor = document.getElementById('selectedCreditor').value;
+  const selectedMonth = document.getElementById('selectedMonth').value;
+
+  const rows = Array.from(document.querySelectorAll('.payment-table tbody tr'));
+  const payments = rows.map(row => {
+    const cells = row.querySelectorAll('input');
+    return {
+      date: cells[0].value,
+      method: cells[1].value,
+      reference: cells[2].value,
+      amount: cells[3].value
+    };
+  });
+
+  const payload = {
+    creditor: selectedCreditor,
+    month: selectedMonth,
+    payments: payments,
+    totalPaid: document.getElementById('totalPaid').textContent.replace(/[^\d.]/g, ''),
+    balanceOwing: document.getElementById('balanceOwing').textContent.replace(/[^\d.]/g, '')
+  };
+
+  await fetch('https://script.google.com/macros/s/AKfycbxTFhNC88a2scHgNBay9Apy1i10T8LO7fCmgX8mcmUHy5cQKiQeXjdN4fLQbblDhtycgQ/exec', {
+    method: "POST",
+    body: JSON.stringify(payload),
+    headers: { "Content-Type": "application/json" }
+  });
+
+  alert("Saved to Google Sheets!");
+}
+
+</script>
+</body>
+</html>
